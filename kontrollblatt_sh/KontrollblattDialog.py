@@ -54,6 +54,7 @@ class KontrollblattDialog(QDialog):
         # layer stuff
         self.iface = iface
         self.layer = self.iface.activeLayer()
+        self.layer.removeSelection()
 
         # gui stuff:
         self.setWindowTitle("Bauminventar Kontrollblatt")
@@ -87,10 +88,11 @@ class KontrollblattDialog(QDialog):
         self.frame.layout().addWidget(self.kontrolleurEdit, 1, 1 )
         self.layout.addWidget(self.frame)
          
-        self.buttonBox = QDialogButtonBox(QDialogButtonBox.Cancel|QDialogButtonBox.Save)
+        self.buttonBox = QDialogButtonBox(QDialogButtonBox.Close|QDialogButtonBox.Save)
+        self.buttonBox.button(QDialogButtonBox.Save).setEnabled(False)
         self.buttonBox.accepted.connect(self.save)
         self.buttonBox.rejected.connect(self.close)
-
+          
         # todo: deactivate save
         self.layout.addWidget(self.buttonBox)
         self.setLayout(self.layout)
@@ -103,8 +105,10 @@ class KontrollblattDialog(QDialog):
 
     def selectionMade(self):
         self.layer.selectionChanged.disconnect(self.selectionMade)
-        self.selectedFeatureIdsLabel.setText( str(self.layer.selectedFeatureIds()) )
         self.setVisible(True)
+        if len(self.layer.selectedFeatures()):
+            self.selectedFeatureIdsLabel.setText( str(self.layer.selectedFeatureIds()) )
+            self.buttonBox.button(QDialogButtonBox.Save).setEnabled(True)
 
     def close(self):
         self.layer.removeSelection()
