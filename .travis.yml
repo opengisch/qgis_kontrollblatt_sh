@@ -1,0 +1,30 @@
+language: python
+
+python:
+  - 3.5
+
+git:
+  submodules: false
+
+before_install:
+  - git submodule update --init --recursive
+
+install:
+  - pip install -r requirements.txt
+
+jobs:
+  include:
+
+# Deploy on tag
+    - stage: deploy
+      if: tag is present
+      script: plugin_ci/release/release.sh
+
+# Push translation to transifex
+#    - stage: deploy
+#      if branch = master
+#      addons:
+#        apt:
+#          packages:
+#            - pyqt5-dev-tools
+#      script: scripts/ci/update-translations.sh
