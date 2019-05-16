@@ -36,7 +36,7 @@ class Kontrollblatt(object):
         layer = self.iface.activeLayer()
 
         if( layer.name() == 'kontrollblatt'):
-            self.dlg = KontrollblattDialog( self.iface)
+            self.dlg = KontrollblattDialog( self.iface )
             self.dlg.exec()
         else:
             QMessageBox.information(None, u'Kontrollblatt SH', u'Plugin only available layer "kontrollblatt" with the following fields:\n  - erledigt_datum (date)\n  - kontrolleur (string)')

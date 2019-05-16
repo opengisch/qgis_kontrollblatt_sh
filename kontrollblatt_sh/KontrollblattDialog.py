@@ -11,19 +11,15 @@
 # ---------------------------------------------------------------------
 
 from qgis.gui import (
-    QgsDockWidget,
-    QgsAttributeForm,
-    QgsMapLayerComboBox,
-    QgsAttributeEditorContext,
-    QgsDateTimeEdit
+    QgsDateTimeEdit,
+    QgsMapCanvas
 )
+
 from qgis.core import (
-    QgsExpression,
     QgsMapLayer,
     QgsFeature,
     QgsMapLayerProxyModel,
     QgsProject,
-    QgsDefaultValue,
     NULL
 )
 from qgis.PyQt.QtWidgets import (
@@ -60,13 +56,21 @@ class KontrollblattDialog(QDialog):
         self.layer = self.iface.activeLayer()
 
         # gui stuff:
+        self.setWindowTitle("Bauminventar Kontrollblatt")
         self.layout = QVBoxLayout()
         self.title = QLabel("Bauminventar Kontrollblatt")
+        font = self.title.font()
+        font.setPointSize(24);
+        font.setBold(True);
+        self.title.setFont(font);
         self.layout.addWidget(self.title)
 
         self.selectButton = QPushButton("Baumobjekte selektieren")
         self.selectButton.clicked.connect(self.select)
+        self.selectedFeatureIdsLabel = QLabel()
         self.layout.addWidget(self.selectButton)
+        self.layout.addWidget(self.selectedFeatureIdsLabel)
+        #todo make signal or remove this selected feature list
 
         self.frame = QFrame()
         self.frame.setLayout( QGridLayout() )
@@ -86,23 +90,24 @@ class KontrollblattDialog(QDialog):
         self.buttonBox = QDialogButtonBox(QDialogButtonBox.Cancel|QDialogButtonBox.Save)
         self.buttonBox.accepted.connect(self.save)
         self.buttonBox.rejected.connect(self.close)
-        # todo: deactivate save
 
+        # todo: deactivate save
         self.layout.addWidget(self.buttonBox)
-        
         self.setLayout(self.layout)
     
     def select(self):
-        # self.layer = self.iface.activeLayer()
-        self.iface.mapCanvas().setSelectionColor( QColor("blue") )
-        self.iface.mapCanvas().setMapTool( QgsMapToolSelect(self.iface.mapCanvas()) )
-        # mMapTools.mSelectPolygon = new QgsMapToolSelect( mMapCanvas );
-        # mMapTools.mSelectPolygon->setAction( mActionSelectPolygon );
-        # mMapTools.mSelectPolygon->setSelectionMode( QgsMapToolSelectionHandler::SelectPolygon );
+        self.layer.removeSelection()
+        self.iface.actionSelectPolygon().trigger()
+        self.layer.selectionChanged.connect(self.selectionMade)
+        self.setVisible(False)
 
-        pass
+    def selectionMade(self):
+        self.layer.selectionChanged.disconnect(self.selectionMade)
+        self.selectedFeatureIdsLabel.setText( str(self.layer.selectedFeatureIds()) )
+        self.setVisible(True)
 
     def close(self):
+        self.layer.removeSelection()
         self.done(0)
 
     def save(self):
@@ -112,6 +117,9 @@ class KontrollblattDialog(QDialog):
             feature.setAttribute('erledigt_datum', self.datumEdit.date())
             feature.setAttribute('kontrolleur', self.kontrolleurEdit.text())
             self.layer.updateFeature(feature)
+        if self.layer.commitChanges():
+            self.iface.messageBar().pushMessage( '{number_of_features} Features angepasst (Erledigt_Datum: {date} und Kontrolleur: {kontrolleur}).'
+                .format( number_of_features=len(selectedFeatures), date=self.datumEdit.date().toString('dd.MM.yyyy'), kontrolleur=self.kontrolleurEdit.text() ) )
+        
         self.layer.removeSelection()
-        self.layer.commitChanges()
-        # todo: successmessage
+        self.done(0)
