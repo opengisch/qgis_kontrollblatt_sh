@@ -1,10 +1,10 @@
 [general]
 name=Kontrollblatt SH
-description=Setting of date in a specific environment of inventaries of trees for Kanton Schaffhausen
-about=Bauminventar Kontrollblatt
+description=Bauminventar Kontrollblatt
+about=Setzen von Erledigt_Datum und Kontrolleur auf Layer "kontrollblatt" für eine Auswahl von Features.
 version=3.6
 qgisMinimumVersion=3.0
 repository=https://github.com/opengisch/qgis_kontrollblatt_sh
 tracker=https://github.com/opengisch/qgis_kontrollblatt_sh/issues
-author=David Signer,OPENGIS.ch
+author=David Signer, OPENGIS.ch
 email=david@opengis.ch

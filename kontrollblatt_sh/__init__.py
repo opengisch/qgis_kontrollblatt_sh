@@ -13,6 +13,8 @@
 from qgis.PyQt.QtCore import Qt
 from .KontrollblattDialog import KontrollblattDialog
 from PyQt5.QtWidgets import QAction, QMessageBox
+from PyQt5.QtGui import QIcon
+from . import resources
 
 def classFactory(iface):
     return Kontrollblatt(iface)
@@ -25,6 +27,7 @@ class Kontrollblatt(object):
 
     def initGui(self):
         self.action = QAction(u'Kontrollblatt SH', self.iface.mainWindow())
+        self.action.setIcon(QIcon(":/plugins/kontrollblatt_sh/resources/icon.svg"));
         self.action.triggered.connect(self.run)
         self.iface.addToolBarIcon(self.action)
 
