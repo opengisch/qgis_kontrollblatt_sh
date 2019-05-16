@@ -26,7 +26,7 @@ class Kontrollblatt(object):
         self.iface = iface
 
     def initGui(self):
-        self.action = QAction(u'Kontrollblatt SH', self.iface.mainWindow())
+        self.action = QAction(u'Bauminventar Kontrollblatt', self.iface.mainWindow())
         self.action.setIcon(QIcon(":/plugins/kontrollblatt_sh/resources/icon.svg"));
         self.action.triggered.connect(self.run)
         self.iface.addToolBarIcon(self.action)
@@ -42,5 +42,5 @@ class Kontrollblatt(object):
             self.dlg = KontrollblattDialog( self.iface )
             self.dlg.exec()
         else:
-            QMessageBox.information(None, u'Kontrollblatt SH', u'Plugin only available layer "kontrollblatt" with the following fields:\n  - erledigt_datum (date)\n  - kontrolleur (string)')
+            QMessageBox.information(None, u'Kontrollblatt SH', u'Das Plugin ist nur verfügbar für den Layer "kontrollblatt" mit den Feldern:\n  - erledigt_datum (date)\n  - kontrolleur (string)')
 
