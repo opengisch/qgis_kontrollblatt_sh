@@ -41,5 +41,5 @@ class Kontrollblatt(object):
             self.dlg = KontrollblattDialog( self.iface )
             self.dlg.exec()
         else:
-            QMessageBox.information(None, u'Kontrollblatt SH', u'Das Plugin ist nur verfügbar für den Projekte mit den Layern "kontrollblatt" und "stammdaten".')
+            QMessageBox.information(None, u'Kontrollblatt SH', u'Das Plugin ist nur für das Projekt "Bauminventar" mit den Layern "kontrollblatt" und "stammdaten".')
 

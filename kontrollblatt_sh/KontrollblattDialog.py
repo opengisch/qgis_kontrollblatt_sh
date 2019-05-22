@@ -100,26 +100,34 @@ class KontrollblattDialog(QDialog):
         layout.addWidget(frame)
         layout.addWidget(self.buttonBox)
         self.setLayout(layout)
+
+        self.stammdatenIds=[]
     
     def select(self):
         self.iface.actionSelectPolygon().trigger()
         self.stammdatenLayer.selectionChanged.connect(self.selectionMade)
-        # think about it dave: self.setWindowOpacity(0.5)
         self.setVisible(False)
+        ## self.iface.mainWindow().setVisible(False)
+        self.iface.messageBar().pushMessage( 'Selektieren Sie jetzt die Baumobjekte.')
 
     def selectionMade(self):
         self.stammdatenLayer.selectionChanged.disconnect(self.selectionMade)
-        # think about it dave: self.setWindowOpacity(0.5)
         self.setVisible(True)
-        
-        if len(self.stammdatenLayer.selectedFeatureIds()):
-            self.selectedFeatureIdsLabel.setText(str(self.stammdatenLayer.selectedFeatureIds()))
+
+        self.stammdatenIds.clear()
+        selectedFeatures = self.stammdatenLayer.selectedFeatures()
+        for selectedFeature in selectedFeatures:
+            if selectedFeature["faelljahr"] == NULL:
+                self.stammdatenIds.append(selectedFeature.id())
+
+        if len(self.stammdatenIds):
+            self.selectedFeatureIdsLabel.setText(str(self.stammdatenIds))
         else: 
             self.selectedFeatureIdsLabel.setText('')
         self.setStateOfSaveButton()
 
     def setStateOfSaveButton(self):
-        if len(self.stammdatenLayer.selectedFeatureIds()) and len(self.kontrolleurEdit.text()) and self.datumEdit.dateTime()!=QDateTime():
+        if len(self.stammdatenIds) and len(self.kontrolleurEdit.text()) and self.datumEdit.dateTime()!=QDateTime():
           self.buttonBox.button(QDialogButtonBox.Save).setEnabled(True)
         else:
           self.buttonBox.button(QDialogButtonBox.Save).setEnabled(False)  
@@ -131,8 +139,7 @@ class KontrollblattDialog(QDialog):
         kontrollblattLayer = QgsProject.instance().mapLayersByName('kontrollblatt')[0]
         kontrollblattLayer.startEditing()
 
-        selectedFeatureIds = self.stammdatenLayer.selectedFeatureIds()
-        for stammdatenId in selectedFeatureIds:
+        for stammdatenId in self.stammdatenIds:
             feature = QgsFeature( kontrollblattLayer.fields() )
             feature.setAttribute('erledigt_datum', self.datumEdit.date())
             feature.setAttribute('kontrolleur', self.kontrolleurEdit.text())
@@ -141,7 +148,7 @@ class KontrollblattDialog(QDialog):
 
         if kontrollblattLayer.commitChanges():
             self.iface.messageBar().pushMessage( '{number_of_features} Features hinzugefügt (Erledigt_Datum: {date} und Kontrolleur: {kontrolleur}) mit den stammdaten ids {ids}.'
-                .format( number_of_features=len(selectedFeatureIds), ids=str(selectedFeatureIds), date=self.datumEdit.date().toString('dd.MM.yyyy'), kontrolleur=self.kontrolleurEdit.text() ) )
+                .format( number_of_features=len(self.stammdatenIds), ids=str(self.stammdatenIds), date=self.datumEdit.date().toString('dd.MM.yyyy'), kontrolleur=self.kontrolleurEdit.text() ) )
         
         self.stammdatenLayer.removeSelection()
         self.done(0)
