@@ -38,7 +38,8 @@ from qgis.PyQt.QtWidgets import (
 from qgis.PyQt.QtCore import(
     pyqtSignal,
     QCoreApplication,
-    QVariant
+    QVariant,
+    QDateTime
 )
 from qgis.PyQt.QtGui import (
     QFont,
@@ -53,7 +54,8 @@ class KontrollblattDialog(QDialog):
 
         # layer stuff
         self.iface = iface
-        self.layer = self.iface.activeLayer()
+        self.layer = QgsProject.instance().mapLayersByName('stammdaten')[0]
+        self.iface.setActiveLayer(self.layer)
         self.layer.removeSelection()
 
         # gui stuff:
@@ -79,9 +81,11 @@ class KontrollblattDialog(QDialog):
         self.datumEdit = QgsDateTimeEdit()
         self.datumEdit.setDisplayFormat('dd.MM.yyyy')
         self.datumEdit.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        self.datumEdit.valueChanged.connect(self.setStateOfSaveButton)
         self.kontrolleurLabel = QLabel("Kontrolleur") 
         self.kontrolleurEdit = QLineEdit()
         self.kontrolleurEdit.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        self.kontrolleurEdit.textChanged.connect(self.setStateOfSaveButton)
         self.frame.layout().addWidget(self.datumLabel, 0, 0 )
         self.frame.layout().addWidget(self.datumEdit, 0, 1 )
         self.frame.layout().addWidget(self.kontrolleurLabel, 1, 0 )
@@ -98,7 +102,6 @@ class KontrollblattDialog(QDialog):
         self.setLayout(self.layout)
     
     def select(self):
-        self.layer.removeSelection()
         self.iface.actionSelectPolygon().trigger()
         self.layer.selectionChanged.connect(self.selectionMade)
         self.setVisible(False)
@@ -106,24 +109,36 @@ class KontrollblattDialog(QDialog):
     def selectionMade(self):
         self.layer.selectionChanged.disconnect(self.selectionMade)
         self.setVisible(True)
-        if len(self.layer.selectedFeatures()):
+        if len(self.layer.selectedFeatureIds()):
             self.selectedFeatureIdsLabel.setText( str(self.layer.selectedFeatureIds()) )
-            self.buttonBox.button(QDialogButtonBox.Save).setEnabled(True)
+        else: 
+            self.selectedFeatureIdsLabel.setText('')
+        self.setStateOfSaveButton()
+
+    def setStateOfSaveButton(self):
+        print("papapapap"+str(self.datumEdit.dateTime())+"   "+self.datumEdit.text()+" "+str(QDateTime()))
+        if len(self.layer.selectedFeatureIds()) and len(self.kontrolleurEdit.text()) and self.datumEdit.dateTime()!=QDateTime():
+          self.buttonBox.button(QDialogButtonBox.Save).setEnabled(True)
+        else:
+          self.buttonBox.button(QDialogButtonBox.Save).setEnabled(False)  
 
     def close(self):
         self.layer.removeSelection()
         self.done(0)
 
     def save(self):
-        self.layer.startEditing()
-        selectedFeatures = self.layer.selectedFeatures()
-        for feature in selectedFeatures:
+        selectedFeatureIds = self.layer.selectedFeatureIds()
+        kontrollblattLayer = QgsProject.instance().mapLayersByName('kontrollblatt')[0]
+        kontrollblattLayer.startEditing()
+        for stammdatenId in selectedFeatureIds:
+            feature = QgsFeature( kontrollblattLayer.fields() )
             feature.setAttribute('erledigt_datum', self.datumEdit.date())
             feature.setAttribute('kontrolleur', self.kontrolleurEdit.text())
-            self.layer.updateFeature(feature)
-        if self.layer.commitChanges():
-            self.iface.messageBar().pushMessage( '{number_of_features} Features angepasst (Erledigt_Datum: {date} und Kontrolleur: {kontrolleur}).'
-                .format( number_of_features=len(selectedFeatures), date=self.datumEdit.date().toString('dd.MM.yyyy'), kontrolleur=self.kontrolleurEdit.text() ) )
+            feature.setAttribute('stammdaten', stammdatenId)
+            kontrollblattLayer.addFeature(feature)
+        if kontrollblattLayer.commitChanges():
+            self.iface.messageBar().pushMessage( '{number_of_features} Features hinzugefügt (Erledigt_Datum: {date} und Kontrolleur: {kontrolleur}) mit den stammdaten ids {ids}.'
+                .format( number_of_features=len(selectedFeatureIds), ids=str(selectedFeatureIds), date=self.datumEdit.date().toString('dd.MM.yyyy'), kontrolleur=self.kontrolleurEdit.text() ) )
         
         self.layer.removeSelection()
         self.done(0)

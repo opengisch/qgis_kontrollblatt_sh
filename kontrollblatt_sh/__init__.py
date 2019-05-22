@@ -14,6 +14,7 @@ from qgis.PyQt.QtCore import Qt
 from .KontrollblattDialog import KontrollblattDialog
 from PyQt5.QtWidgets import QAction, QMessageBox
 from PyQt5.QtGui import QIcon
+from qgis.core import QgsProject
 from . import resources
 
 def classFactory(iface):
@@ -36,11 +37,9 @@ class Kontrollblatt(object):
         del self.action
 
     def run(self):
-        layer = self.iface.activeLayer()
-
-        if( layer.name() == 'kontrollblatt'):
+        if QgsProject.instance().mapLayersByName('stammdaten') and QgsProject.instance().mapLayersByName('kontrollblatt'):
             self.dlg = KontrollblattDialog( self.iface )
             self.dlg.exec()
         else:
-            QMessageBox.information(None, u'Kontrollblatt SH', u'Das Plugin ist nur verfügbar für den Layer "kontrollblatt" mit den Feldern:\n  - erledigt_datum (date)\n  - kontrolleur (string)')
+            QMessageBox.information(None, u'Kontrollblatt SH', u'Das Plugin ist nur verfügbar für den Projekte mit den Layern "kontrollblatt" und "stammdaten".')
 
