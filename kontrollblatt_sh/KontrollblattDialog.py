@@ -20,6 +20,7 @@ from qgis.core import (
     QgsFeature,
     QgsMapLayerProxyModel,
     QgsProject,
+    QgsVectorLayerUtils,
     NULL
 )
 from qgis.PyQt.QtWidgets import (
@@ -101,7 +102,7 @@ class KontrollblattDialog(QDialog):
         layout.addWidget(self.buttonBox)
         self.setLayout(layout)
 
-        self.stammdatenIds=[]
+        self.stammdatenTids=[]
     
     def select(self):
         self.iface.actionSelectPolygon().trigger()
@@ -114,20 +115,21 @@ class KontrollblattDialog(QDialog):
         self.stammdatenLayer.selectionChanged.disconnect(self.selectionMade)
         self.setVisible(True)
 
-        self.stammdatenIds.clear()
+        self.stammdatenTids.clear()
         selectedFeatures = self.stammdatenLayer.selectedFeatures()
         for selectedFeature in selectedFeatures:
             if selectedFeature["faelljahr"] == NULL:
-                self.stammdatenIds.append(selectedFeature.id())
+                self.stammdatenTids.append(selectedFeature["T_id"])
 
-        if len(self.stammdatenIds):
-            self.selectedFeatureIdsLabel.setText(str(self.stammdatenIds))
+
+        if len(self.stammdatenTids):
+            self.selectedFeatureIdsLabel.setText(str(self.stammdatenTids))
         else: 
             self.selectedFeatureIdsLabel.setText('')
         self.setStateOfSaveButton()
 
     def setStateOfSaveButton(self):
-        if len(self.stammdatenIds) and len(self.kontrolleurEdit.text()) and self.datumEdit.dateTime()!=QDateTime():
+        if len(self.stammdatenTids) and len(self.kontrolleurEdit.text()) and self.datumEdit.dateTime()!=QDateTime():
           self.buttonBox.button(QDialogButtonBox.Save).setEnabled(True)
         else:
           self.buttonBox.button(QDialogButtonBox.Save).setEnabled(False)  
@@ -139,16 +141,19 @@ class KontrollblattDialog(QDialog):
         kontrollblattLayer = QgsProject.instance().mapLayersByName('kontrollblatt')[0]
         kontrollblattLayer.startEditing()
 
-        for stammdatenId in self.stammdatenIds:
-            feature = QgsFeature( kontrollblattLayer.fields() )
+        features = []
+        for stammdatenId in self.stammdatenTids:
+            feature = QgsVectorLayerUtils.createFeature( kontrollblattLayer )
             feature.setAttribute('erledigt_datum', self.datumEdit.date())
             feature.setAttribute('kontrolleur', self.kontrolleurEdit.text())
             feature.setAttribute('stammdaten', stammdatenId)
-            kontrollblattLayer.addFeature(feature)
+            features.append(feature)
+
+        kontrollblattLayer.addFeatures(features)
 
         if kontrollblattLayer.commitChanges():
             self.iface.messageBar().pushMessage( '{number_of_features} Features hinzugefügt (Erledigt_Datum: {date} und Kontrolleur: {kontrolleur}) mit den stammdaten ids {ids}.'
-                .format( number_of_features=len(self.stammdatenIds), ids=str(self.stammdatenIds), date=self.datumEdit.date().toString('dd.MM.yyyy'), kontrolleur=self.kontrolleurEdit.text() ) )
+                .format( number_of_features=len(self.stammdatenTids), ids=str(self.stammdatenTids), date=self.datumEdit.date().toString('dd.MM.yyyy'), kontrolleur=self.kontrolleurEdit.text() ) )
         
         self.stammdatenLayer.removeSelection()
         self.done(0)
