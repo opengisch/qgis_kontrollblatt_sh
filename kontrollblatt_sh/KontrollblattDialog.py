@@ -107,12 +107,14 @@ class KontrollblattDialog(QDialog):
     def select(self):
         self.iface.actionSelectPolygon().trigger()
         self.stammdatenLayer.selectionChanged.connect(self.selectionMade)
+        self.iface.mapCanvas().mapToolSet.connect(self.noSelectionMade)
         self.setVisible(False)
         ## self.iface.mainWindow().setVisible(False)
         self.iface.messageBar().pushMessage( 'Selektieren Sie jetzt die Baumobjekte.')
 
     def selectionMade(self):
         self.stammdatenLayer.selectionChanged.disconnect(self.selectionMade)
+        self.iface.mapCanvas().mapToolSet.disconnect(self.noSelectionMade)
         self.setVisible(True)
 
         self.stammdatenTids.clear()
@@ -125,7 +127,14 @@ class KontrollblattDialog(QDialog):
         if len(self.stammdatenTids):
             self.selectedFeatureIdsLabel.setText(str(self.stammdatenTids))
         else: 
-            self.selectedFeatureIdsLabel.setText('')
+            self.selectedFeatureIdsLabel.setText('No selection made yet.')
+        self.setStateOfSaveButton()
+
+    def noSelectionMade(self):
+        self.stammdatenLayer.selectionChanged.disconnect(self.selectionMade)
+        self.iface.mapCanvas().mapToolSet.disconnect(self.noSelectionMade)
+        self.setVisible(True)
+        self.selectedFeatureIdsLabel.setText('No selection made yet.')
         self.setStateOfSaveButton()
 
     def setStateOfSaveButton(self):
