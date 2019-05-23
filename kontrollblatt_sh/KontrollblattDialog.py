@@ -56,8 +56,6 @@ class KontrollblattDialog(QDialog):
         # layer stuff
         self.iface = iface
         self.stammdatenLayer = QgsProject.instance().mapLayersByName('stammdaten')[0]
-        self.iface.setActiveLayer(self.stammdatenLayer)
-        self.stammdatenLayer.removeSelection()
 
         # gui stuff:
         self.setWindowTitle("Bauminventar Kontrollblatt")
@@ -71,9 +69,20 @@ class KontrollblattDialog(QDialog):
 
         selectButton = QPushButton("Baumobjekte selektieren")
         selectButton.clicked.connect(self.select)
-        self.selectedFeatureIdsLabel = QLabel()
+        self.selectedStammdatenTidsLabel = QLabel()
+        self.selectedStammdatenTidsLabel.setText('Es wurden noch keine Objekte selektiert.')
+        font = self.selectedStammdatenTidsLabel.font()
+        font.setBold(True)
+        self.selectedStammdatenTidsLabel.setFont(font)
+        self.selectedFelledTidsLabel = QLabel()
+        self.selectedFelledTidsLabel.setVisible(False)
+        font = self.selectedFelledTidsLabel.font()
+        font.setItalic(True)
+        self.selectedFelledTidsLabel.setFont(font)
+
         layout.addWidget(selectButton)
-        layout.addWidget(self.selectedFeatureIdsLabel)
+        layout.addWidget(self.selectedStammdatenTidsLabel)
+        layout.addWidget(self.selectedFelledTidsLabel)
 
         self.datumLabel = QLabel("Erledigt_Datum") 
         self.datumEdit = QgsDateTimeEdit()
@@ -103,13 +112,15 @@ class KontrollblattDialog(QDialog):
         self.setLayout(layout)
 
         self.stammdatenTids=[]
+        self.felledTids=[]
     
     def select(self):
+        self.iface.setActiveLayer(self.stammdatenLayer)
+        self.stammdatenLayer.removeSelection()
         self.iface.actionSelectPolygon().trigger()
         self.stammdatenLayer.selectionChanged.connect(self.selectionMade)
         self.iface.mapCanvas().mapToolSet.connect(self.noSelectionMade)
         self.setVisible(False)
-        ## self.iface.mainWindow().setVisible(False)
         self.iface.messageBar().pushMessage( 'Selektieren Sie jetzt die Baumobjekte.')
 
     def selectionMade(self):
@@ -118,23 +129,22 @@ class KontrollblattDialog(QDialog):
         self.setVisible(True)
 
         self.stammdatenTids.clear()
+        self.felledTids.clear()
         selectedFeatures = self.stammdatenLayer.selectedFeatures()
         for selectedFeature in selectedFeatures:
             if selectedFeature["faelljahr"] == NULL:
                 self.stammdatenTids.append(selectedFeature["T_id"])
+            else:
+                self.felledTids.append(selectedFeature["T_id"])
 
-
-        if len(self.stammdatenTids):
-            self.selectedFeatureIdsLabel.setText(str(self.stammdatenTids))
-        else: 
-            self.selectedFeatureIdsLabel.setText('No selection made yet.')
+        self.setSelectionInfo()
         self.setStateOfSaveButton()
 
     def noSelectionMade(self):
         self.stammdatenLayer.selectionChanged.disconnect(self.selectionMade)
         self.iface.mapCanvas().mapToolSet.disconnect(self.noSelectionMade)
         self.setVisible(True)
-        self.selectedFeatureIdsLabel.setText('No selection made yet.')
+        self.setSelectionInfo()
         self.setStateOfSaveButton()
 
     def setStateOfSaveButton(self):
@@ -142,6 +152,25 @@ class KontrollblattDialog(QDialog):
           self.buttonBox.button(QDialogButtonBox.Save).setEnabled(True)
         else:
           self.buttonBox.button(QDialogButtonBox.Save).setEnabled(False)  
+
+    def setSelectionInfo(self):
+        if len(self.stammdatenTids):
+            if len(self.stammdatenTids)>1:
+                self.selectedStammdatenTidsLabel.setText('{} Objekte sind selektiert.'.format(len(self.stammdatenTids)))
+            else:
+                self.selectedStammdatenTidsLabel.setText('Ein Objekt ist selektiert.')
+            self.selectedStammdatenTidsLabel.setToolTip(str(self.stammdatenTids))
+        else:
+            self.selectedStammdatenTidsLabel.setText('Es wurden noch keine Objekte selektiert.')
+        if len(self.felledTids):
+            if len(self.felledTids)>1:
+                self.selectedFelledTidsLabel.setText('{} gefällte Objekte sind selektiert (und werden ignoriert).'.format(len(self.felledTids)))
+            else:
+                self.selectedFelledTidsLabel.setText('Ein gefälltes Objekt ist selektiert (und wird ignoriert).')
+            self.selectedFelledTidsLabel.setToolTip(str(self.felledTids))
+            self.selectedFelledTidsLabel.setVisible(True)
+        else:
+            self.selectedFelledTidsLabel.setVisible(False)
 
     def close(self):
         self.done(0)
