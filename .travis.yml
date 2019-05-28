@@ -12,6 +12,10 @@ before_install:
 #install:
 #  - pip install -r requirements.txt
 
+
+script:
+  - pyrcc5 -o kontrollblatt_sh/resources_rc.py kontrollblatt_sh/resources.qrc
+
 jobs:
   include:
 
@@ -20,13 +24,14 @@ jobs:
       if: tag is present
       script: plugin_ci/release/release.sh
 
-# env:
-#  global:
+env:
+  global:
     # OSGEO credentials to release the plugin
     # Generate with the following command for proper special characters support
     # travis encrypt OSGEO_PASSWORD=\''Your super secret password!'\'
-#    - OSGEO_USERNAME=3nids
-#    - secure: "FGDDbMkw5FaPKnLd3F01QvRWQ3MXBcwwSVSTFY0LsTi1tjptcoAiCCDguL6+PS+1scTMgHO7QbLN9AVfToRkCliaBJFPI8xnviOOtR3KUAIdD/h7WzzD5sB1IYEJmZ3aexV53dE8VGdC5NDTCM1iujEuJq8SNSmZTmmaiT8yKzUE/Ds0oWJYF5gsqUoKv0YTpJ/wUdMa9jYOs7fiXOFn+5yuvS2bUIm/RCzAYQZseee1HXIgyV04OZzCWAOOfBnKJbfa9XDtu2AoEXIGNn+zjkSaroIAJ+XNTTSbywFnISux2Vc9j5+YYop2att69p904hySQLar+DTExexCtwKWmts9dBQNrnqGo0VfWQT1iyjwufsGbCKpTBT+ZEDHXn1hr9XdLKYMqvVGgPe+jF7YFJxlewBt6byktKyOFLsfLhUKpB+SPpzdyYioFsKs6+iUkOZTshFb3NCvpqgSJh7b3Ej3xTwFh/oCQD4s6HdG4o02i7BCLo2nP2r2XyECxkeOKvLDQBrCPSmeoeLqwLSwNJ+k9mg+AUR8DZy+j0+jV+z5CUPvs8CP/3Al/5ckXucj1C5bmI77KxE+tF0UrYGCY2j4n4SiyYEjqh4ff1rUKlxCTjU1rCRbOkjvGg6Qtu0+FAHpfwUg8gM0qAb6W9svjaNuYVcx2mr/x+xT8chPywc="
+    - OSGEO_USERNAME=signedav
+    - travis encrypt OSGEO_PASSWORD="test"
+    #- secure: "FGDDbMkw5FaPKnLd3F01QvRWQ3MXBcwwSVSTFY0LsTi1tjptcoAiCCDguL6+PS+1scTMgHO7QbLN9AVfToRkCliaBJFPI8xnviOOtR3KUAIdD/h7WzzD5sB1IYEJmZ3aexV53dE8VGdC5NDTCM1iujEuJq8SNSmZTmmaiT8yKzUE/Ds0oWJYF5gsqUoKv0YTpJ/wUdMa9jYOs7fiXOFn+5yuvS2bUIm/RCzAYQZseee1HXIgyV04OZzCWAOOfBnKJbfa9XDtu2AoEXIGNn+zjkSaroIAJ+XNTTSbywFnISux2Vc9j5+YYop2att69p904hySQLar+DTExexCtwKWmts9dBQNrnqGo0VfWQT1iyjwufsGbCKpTBT+ZEDHXn1hr9XdLKYMqvVGgPe+jF7YFJxlewBt6byktKyOFLsfLhUKpB+SPpzdyYioFsKs6+iUkOZTshFb3NCvpqgSJh7b3Ej3xTwFh/oCQD4s6HdG4o02i7BCLo2nP2r2XyECxkeOKvLDQBrCPSmeoeLqwLSwNJ+k9mg+AUR8DZy+j0+jV+z5CUPvs8CP/3Al/5ckXucj1C5bmI77KxE+tF0UrYGCY2j4n4SiyYEjqh4ff1rUKlxCTjU1rCRbOkjvGg6Qtu0+FAHpfwUg8gM0qAb6W9svjaNuYVcx2mr/x+xT8chPywc="
     # TRANSIFEX_API_TOKEN, generated on Transifex website
     # travis encrypt TX_TOKEN="......"
 #    - secure: "mNXtVxVr3nUjpoL/92+QgT69MyefJozpXYPLMrMddwCrfC04gcfYFTh0z2auk5RdM4aFXrf0paSRZQg952196k3SGqX9PBc21YTSDFQp4uvoiEeH2SvqXa2j4mgi21LqMTwk1PYUxYFnkc8xdB3zPFpu8T8jQ42qrPEleF0nCm+FJsSR+sjNwEELkdUkiC3ekFAReMCnlCXfYyP9T5RU3P9lxj8ceLGkJ1eHtt7zsa8EOysUXs88GFlWcvRSH04wm95p7ZY+y5vXq3fE4jzixP+XgK9HxAPcU2Rvpjgk5pcjTDlfnwNDmCONWax1XGvUur19QkTjECcI1DqHkMoW9/l8nluKzL9dufM658605Q4ctSVDqdUSF3EU9G9UQLV0wAiKqwpzg7T3GuELqDKvCuVSF95MrD3c5rmSMOv6T2ZMHF3rSr0GiUOOH+ZSZjWs/IOC541KEB4cPUTVJ+4GLjs+RzZxM1CXU9VVyn2LmSPP9RXjZACRQsZvC3XL6Cxq5CCcl8SE/4amyVw5YjVN0jJFObsYNtgqR9cDPfDmWVNMTssdjZVA15VSEUD7KTB+4mEyArFod92w/FCwzlMp1QuBMXL1NzURUz1JE9a2KKWr+T6bzSNoeyN5/n07yMYf4tPfcApAcZukHyntPeKfrASZcQmsmlcvY/XMRgjCHjU="
