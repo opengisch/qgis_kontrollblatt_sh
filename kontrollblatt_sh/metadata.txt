@@ -9,3 +9,4 @@ tracker=https://github.com/opengisch/qgis_kontrollblatt_sh/issues
 author=David Signer, OPENGIS.ch
 email=david@opengis.ch
 icon=resources/icon.svg
+homepage=www.opengis.ch
