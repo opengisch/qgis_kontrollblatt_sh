@@ -9,9 +9,8 @@ git:
 before_install:
   - git submodule update --init --recursive
 
-#install:
-#  - pip install -r requirements.txt
-
+install:
+  - pip install -r requirements.txt
 
 script:
   - pyrcc5 -o kontrollblatt_sh/resources_rc.py kontrollblatt_sh/resources.qrc
