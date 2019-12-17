@@ -55,14 +55,14 @@ class KontrollblattDialog(QDialog):
 
         # layer stuff
         self.iface = iface
-        self.stammdatenLayer = QgsProject.instance().mapLayersByName('stammdaten')[0]
+        self.stammdatenLayer = QgsProject.instance().mapLayersByName('baumstammdaten')[0]
 
         # gui stuff:
         self.setWindowTitle("Bauminventar Kontrollblatt")
         layout = QVBoxLayout()
         title = QLabel("Bauminventar Kontrollblatt")
         font = title.font()
-        font.setPointSize(24);
+        font.setPointSize(24)
         font.setBold(True);
         title.setFont(font);
         layout.addWidget(title)
@@ -184,7 +184,7 @@ class KontrollblattDialog(QDialog):
             feature = QgsVectorLayerUtils.createFeature( kontrollblattLayer )
             feature.setAttribute('erledigt_datum', self.datumEdit.date())
             feature.setAttribute('kontrolleur', self.kontrolleurEdit.text())
-            feature.setAttribute('stammdaten', stammdatenId)
+            feature.setAttribute('baumstammdaten', stammdatenId)
             features.append(feature)
 
         kontrollblattLayer.addFeatures(features)
