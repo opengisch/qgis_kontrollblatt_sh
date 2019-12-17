@@ -37,7 +37,7 @@ class Kontrollblatt(object):
         del self.action
 
     def run(self):
-        if QgsProject.instance().mapLayersByName('stammdaten') and QgsProject.instance().mapLayersByName('kontrollblatt'):
+        if QgsProject.instance().mapLayersByName('baumstammdaten') and QgsProject.instance().mapLayersByName('kontrollblatt'):
             self.dlg = KontrollblattDialog( self.iface )
             self.dlg.exec()
         else:
