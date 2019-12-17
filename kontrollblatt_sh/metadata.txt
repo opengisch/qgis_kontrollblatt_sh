@@ -2,7 +2,7 @@
 name=Kontrollblatt SH
 description=Bauminventar Kontrollblatt
 about=Setzen von Erledigt_Datum und Kontrolleur auf Layer "kontrollblatt" für eine Auswahl von Features.
-version=1.0
+version=1.1
 qgisMinimumVersion=3.0
 repository=https://github.com/opengisch/qgis_kontrollblatt_sh
 tracker=https://github.com/opengisch/qgis_kontrollblatt_sh/issues
